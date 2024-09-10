@@ -5,8 +5,9 @@ const path = require('node:path');
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
+const pathToFileWithDb = path.join(__dirname, 'db.txt');
 const getUsers = async () => {
-    const pathToFileWithDb = path.join(__dirname, 'db.txt');
+
     const data = await fsPromises.readFile(pathToFileWithDb, 'utf-8');
     return await JSON.parse(data);
 }
@@ -46,6 +47,10 @@ const users = getUsers().then(users => {
                     const id = users[users.length - 1].id + 1;
                     const newUser = {id, name, email, password};
                     users.push(newUser);
+                    const postUser = async () =>{
+                         await fsPromises.writeFile(pathToFileWithDb,JSON.stringify(users));
+                    }
+                    postUser();
                     return res.status(201).send(newUser);
                 }
                 return res.status(400).send('Not valid data');
@@ -72,6 +77,12 @@ const users = getUsers().then(users => {
                         users[userIndex].password = password;
                         return res.status(201).send(users[userIndex]);
                     }
+
+                    const postUser = async () =>{
+                        await fsPromises.writeFile(pathToFileWithDb,JSON.stringify(users));
+                    }
+                    postUser();
+
                     return res.status(400).send('Not valid data');
                 }
             } catch (e) {
@@ -89,6 +100,10 @@ const users = getUsers().then(users => {
                         return res.status(404).send('User not found');
                     }
                     users.splice(userIndex, 1);
+                    const postUser = async () =>{
+                        await fsPromises.writeFile(pathToFileWithDb,JSON.stringify(users));
+                    }
+                    postUser();
                     return res.sendStatus(204);
                 }
             } catch (e) {
