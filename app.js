@@ -39,7 +39,7 @@ const users = getUsers().then(users => {
         });
 
 
-        app.post('/users', (req, res) => {
+        app.post('/users', async (req, res) => {
             try {
                 const {name, email, password} = req.body;
                 const pattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
@@ -47,10 +47,8 @@ const users = getUsers().then(users => {
                     const id = users[users.length - 1].id + 1;
                     const newUser = {id, name, email, password};
                     users.push(newUser);
-                    const postUser = async () =>{
-                         await fsPromises.writeFile(pathToFileWithDb,JSON.stringify(users));
-                    }
-                    postUser();
+                    await fsPromises.writeFile(pathToFileWithDb, JSON.stringify(users));
+
                     return res.status(201).send(newUser);
                 }
                 return res.status(400).send('Not valid data');
@@ -60,7 +58,7 @@ const users = getUsers().then(users => {
             }
         });
 
-        app.put('/users/:id', (req, res) => {
+        app.put('/users/:id', async (req, res) => {
             try {
                 const hasNumber = /\d/.test(req.params.id);
                 if (hasNumber) {
@@ -75,14 +73,10 @@ const users = getUsers().then(users => {
                         users[userIndex].name = name;
                         users[userIndex].email = email;
                         users[userIndex].password = password;
+
+                        await fsPromises.writeFile(pathToFileWithDb, JSON.stringify(users));
                         return res.status(201).send(users[userIndex]);
                     }
-
-                    const postUser = async () =>{
-                        await fsPromises.writeFile(pathToFileWithDb,JSON.stringify(users));
-                    }
-                    postUser();
-
                     return res.status(400).send('Not valid data');
                 }
             } catch (e) {
@@ -90,7 +84,7 @@ const users = getUsers().then(users => {
             }
         });
 
-        app.delete('/users/:id', (req, res) => {
+        app.delete('/users/:id', async (req, res) => {
             try {
                 const hasNumber = /\d/.test(req.params.id);
                 if (hasNumber) {
@@ -100,10 +94,7 @@ const users = getUsers().then(users => {
                         return res.status(404).send('User not found');
                     }
                     users.splice(userIndex, 1);
-                    const postUser = async () =>{
-                        await fsPromises.writeFile(pathToFileWithDb,JSON.stringify(users));
-                    }
-                    postUser();
+                    await fsPromises.writeFile(pathToFileWithDb, JSON.stringify(users));
                     return res.sendStatus(204);
                 }
             } catch (e) {
